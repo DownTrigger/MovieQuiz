@@ -3,6 +3,7 @@ import UIKit
 final class MovieQuizViewController: UIViewController {
     
     // MARK: - Outlets
+    
     @IBOutlet private var imageView: UIImageView!
     @IBOutlet private var textLabel: UILabel!
     @IBOutlet private var counterLabel: UILabel!
@@ -10,6 +11,7 @@ final class MovieQuizViewController: UIViewController {
     @IBOutlet private weak var yesButton: UIButton!
     
     // MARK: - Properties
+    
     private var currentQuestionIndex = 0
     private var correctAnswers = 0
     private let questions: [QuizQuestion] = [
@@ -56,15 +58,27 @@ final class MovieQuizViewController: UIViewController {
     ]
     
     // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        setupImageView()
         
         let currentQuestion = questions[currentQuestionIndex]
         let convertData = convert(model: currentQuestion)
         show(quiz: convertData)
     }
     
+    // MARK: - Setup UI
+    
+    private func setupImageView() {
+        imageView.layer.masksToBounds = true
+        imageView.layer.borderWidth = 8
+        imageView.layer.borderColor = UIColor.clear.cgColor
+    }
+    
     // MARK: - Models
+    
     private struct QuizStepViewModel {
         let image: UIImage
         let question: String
@@ -84,17 +98,13 @@ final class MovieQuizViewController: UIViewController {
     }
     
     // MARK: - Game Flow
+    
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
         return QuizStepViewModel(
             image: UIImage(named: model.image) ?? UIImage(),
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1)/\(questions.count)"
         )
-    }
-    
-    private func setAnswerButtons(enabled: Bool) {
-        yesButton.isEnabled = enabled
-        noButton.isEnabled = enabled
     }
     
     private func show(quiz step: QuizStepViewModel) {
@@ -120,25 +130,22 @@ final class MovieQuizViewController: UIViewController {
     }
     
     private func showAnswerResult(isCorrect: Bool) {
-        correctAnswers = isCorrect ? correctAnswers + 1 : correctAnswers
+        if isCorrect { correctAnswers += 1 }
         
-        imageView.layer.masksToBounds = true
-        imageView.layer.borderWidth = 8
-        imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
-        
+        highlightImageBorder(isCorrect: isCorrect)
         setAnswerButtons(enabled: false)
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            self.imageView.layer.borderColor = UIColor.clear.cgColor
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            guard let self = self else { return }
+            self.resetImageBorder()
             self.showNextQuestionOrResults()
-            
             self.setAnswerButtons(enabled: true)
         }
     }
     
     private func showNextQuestionOrResults() {
         if currentQuestionIndex == questions.count - 1  {
-            let text = "Ваш результат: \(correctAnswers)/10"
+            let text = "Ваш результат: \(correctAnswers)/\(questions.count)"
             let viewModel = QuizResultsViewModel(title: "Этот раунд окончен", text: text, buttonText: "Сыграть еще раз")
             
             show(quiz: viewModel)
@@ -151,7 +158,23 @@ final class MovieQuizViewController: UIViewController {
         }
     }
     
+    // MARK: - UI Helpers
+    
+    private func setAnswerButtons(enabled: Bool) {
+        yesButton.isEnabled = enabled
+        noButton.isEnabled = enabled
+    }
+    
+    private func highlightImageBorder(isCorrect: Bool) {
+        imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
+    }
+    
+    private func resetImageBorder() {
+        imageView.layer.borderColor = UIColor.clear.cgColor
+    }
+    
     // MARK: - Actions
+    
     @IBAction private func yesButtonClicked(_ sender: Any) {
         showAnswerResult(isCorrect: questions[currentQuestionIndex].correctAnswer)
     }
