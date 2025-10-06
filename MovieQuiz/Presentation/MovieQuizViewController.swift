@@ -18,6 +18,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private let questionsAmount: Int = 10
     private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
+//    private var alertPresenter = AlertPresenter()
     
     // MARK: - Lifecycle
     
@@ -87,20 +88,21 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     private func showAnswerResult(isCorrect: Bool) {
+        let delayInSeconds: TimeInterval = 1
         if isCorrect { correctAnswers += 1 }
-        
         highlightImageBorder(isCorrect: isCorrect)
-        disableButtons(true)
         
-        resetImageBorder()
-        self.showNextQuestionOrResults()
+        Timer.scheduledTimer(withTimeInterval: delayInSeconds, repeats: false) { [weak self] _ in
+            guard let self = self else { return }
+            self.showNextQuestionOrResults()
+            self.resetImageBorder()
+        }
     }
     
     private func showNextQuestionOrResults() {
         if currentQuestionIndex == questionsAmount - 1  {
             let text = correctAnswers == questionsAmount ? "Поздравляем, вы ответили на 10 из 10!" : "Ваш результат: \(correctAnswers)/\(questionsAmount)"
             let viewModel = QuizResultsViewModel(title: "Раунд окончен", text: text, buttonText: "Сыграть еще")
-            
             show(quiz: viewModel)
         } else {
             currentQuestionIndex += 1
