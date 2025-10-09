@@ -1,10 +1,3 @@
-//
-//  QuizStepViewModel.swift
-//  MovieQuiz
-//
-//  Created by Андрей Рузавин on 17/9/25.
-//
-
 import Foundation
 import UIKit
 

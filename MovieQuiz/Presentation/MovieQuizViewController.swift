@@ -14,8 +14,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     private var currentQuestionIndex = 0
     private var correctAnswers = 0
-    
     private let questionsAmount: Int = 10
+    
     private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
     
@@ -33,6 +33,23 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         setupImageView()
     }
     
+    // MARK: - Setup UI
+    
+    private func setupImageView() {
+        let layer = imageView.layer
+        layer.masksToBounds = true
+        layer.borderWidth = 8
+        layer.borderColor = UIColor.clear.cgColor
+    }
+    
+    private func highlightImageBorder(isCorrect: Bool) {
+        imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
+    }
+    
+    private func resetImageBorder() {
+        imageView.layer.borderColor = UIColor.clear.cgColor
+    }
+    
     // MARK: - QuestionFactoryDelegate
     
     func didReceiveNextQuestion(question: QuizQuestion?) {
@@ -48,18 +65,10 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         }
     }
     
-    // MARK: - Setup UI
-    
-    private func setupImageView() {
-        imageView.layer.masksToBounds = true
-        imageView.layer.borderWidth = 8
-        imageView.layer.borderColor = UIColor.clear.cgColor
-    }
-    
     // MARK: - Game Flow
     
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
-        return QuizStepViewModel(
+        QuizStepViewModel(
             image: UIImage(named: model.image) ?? UIImage(),
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)"
@@ -81,11 +90,11 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         let result = correctAnswers == questionsAmount ? "Поздравляем, вы ответили на 10 из 10!" : "Ваш результат: \(correctAnswers)/\(questionsAmount)"
         
         let text = """
-            \(result)
-            Количество сыгранных квизов: \(statisticService.gamesCount)
-            Рекорд: \(bestGame)/\(questionsAmount) (\(dateString))
-            Средняя точность: \(accuracyString)
-            """
+        \(result)
+        Количество сыгранных квизов: \(statisticService.gamesCount)
+        Рекорд: \(bestGame)/\(questionsAmount) (\(dateString))
+        Средняя точность: \(accuracyString)
+        """
         
         return QuizResultsViewModel(title: "Этот раунд окончен!", text: text, buttonText: "Сыграть еще раз")
     }
@@ -114,7 +123,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         highlightImageBorder(isCorrect: isCorrect)
         
         Timer.scheduledTimer(withTimeInterval: delayInSeconds, repeats: false) { [weak self] _ in
-            guard let self = self else { return }
+            guard let self else { return }
             self.showNextQuestionOrResults()
             self.resetImageBorder()
         }
@@ -137,14 +146,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private func disableButtons(_ value: Bool) {
         yesButton.isEnabled = !value
         noButton.isEnabled = !value
-    }
-    
-    private func highlightImageBorder(isCorrect: Bool) {
-        imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
-    }
-    
-    private func resetImageBorder() {
-        imageView.layer.borderColor = UIColor.clear.cgColor
     }
     
     // MARK: - Actions
