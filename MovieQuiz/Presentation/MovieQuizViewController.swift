@@ -74,7 +74,7 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
         hideLoadingIndicator()
         
         let model = AlertModel(title: "Ошибка", message: message, buttonText: "Попробовать еще раз") { [weak self] in
-        guard let self = self else { return }
+            guard let self = self else { return }
             
             self.presenter.retryLoadData()
         }
@@ -92,9 +92,9 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
     }
     
     func setButtonsEnabled(_ value: Bool) {
-           yesButton.isEnabled = value
-           noButton.isEnabled = value
-       }
+        yesButton.isEnabled = value
+        noButton.isEnabled = value
+    }
     
     // MARK: - Actions
     

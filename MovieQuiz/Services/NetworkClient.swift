@@ -5,7 +5,7 @@ protocol NetworkRouting {
 }
 
 struct NetworkClient: NetworkRouting {
-
+    
     private enum NetworkError: Error {
         case codeError
     }
@@ -21,7 +21,7 @@ struct NetworkClient: NetworkRouting {
             }
             
             if let response = response as? HTTPURLResponse,
-                response.statusCode < 200 || response.statusCode >= 300 {
+               response.statusCode < 200 || response.statusCode >= 300 {
                 handler(.failure(NetworkError.codeError))
                 return
             }
@@ -49,8 +49,8 @@ struct StubNetworkClient: NetworkRouting {
             handler(.success(expectedResponse))
         }
     }
-                    
-                    private var expectedResponse: Data {
+    
+    private var expectedResponse: Data {
                """
                {
                   "errorMessage" : "",
@@ -82,5 +82,5 @@ struct StubNetworkClient: NetworkRouting {
                    ]
                  }
                """.data(using: .utf8) ?? Data()
-            }
+    }
 }
