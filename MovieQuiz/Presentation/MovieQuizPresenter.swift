@@ -5,7 +5,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     // MARK: - Properties
     
     private var questionFactory: QuestionFactoryProtocol?
-    private weak var viewController: MovieQuizViewController?
+    private weak var viewController: MovieQuizViewControllerProtocol?
     
     private var currentQuestion: QuizQuestion?
     private var correctAnswers = 0
@@ -16,7 +16,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     
     // MARK: - Initialization
     
-    init(viewController: MovieQuizViewController) {
+    init(viewController: MovieQuizViewControllerProtocol) {
         self.viewController = viewController
         
         questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
@@ -59,6 +59,11 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     
     func noButtonClicked() {
         didAnswer(isYes: false)
+    }
+    
+    func retryLoadData() {
+        questionFactory?.loadData()
+        viewController?.showLoadingIndicator()
     }
     
     func restartGame() {
@@ -108,6 +113,14 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         return QuizResultsViewModel(title: "Этот раунд окончен!", text: text, buttonText: "Сыграть ещё раз")
     }
     
+    func convert(model: QuizQuestion) -> QuizStepViewModel {
+        QuizStepViewModel(
+            image: UIImage(data: model.image) ?? UIImage(),
+            question: model.text,
+            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)"
+        )
+    }
+    
     // MARK: - Private Methods
     
     private func disableButtons() {
@@ -118,14 +131,6 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     private func enableButtons() {
         buttonsEnabled = true
         viewController?.setButtonsEnabled(true)
-    }
-    
-    private func convert(model: QuizQuestion) -> QuizStepViewModel {
-        QuizStepViewModel(
-            image: UIImage(data: model.image) ?? UIImage(),
-            question: model.text,
-            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)"
-        )
     }
     
     private func proceedWithAnswer(isCorrect: Bool) {

@@ -1,6 +1,6 @@
 import UIKit
 
-final class MovieQuizViewController: UIViewController {
+final class MovieQuizViewController: UIViewController, MovieQuizViewControllerProtocol {
     
     // MARK: - Outlets
     
@@ -76,7 +76,7 @@ final class MovieQuizViewController: UIViewController {
         let model = AlertModel(title: "Ошибка", message: message, buttonText: "Попробовать еще раз") { [weak self] in
         guard let self = self else { return }
             
-            self.presenter.restartGame()
+            self.presenter.retryLoadData()
         }
         alertPresenter.show(in: self, model: model)
     }
