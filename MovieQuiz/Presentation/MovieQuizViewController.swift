@@ -13,8 +13,7 @@ final class MovieQuizViewController: UIViewController {
     
     // MARK: - Properties
     
-    private var presenter: MovieQuizPresenter!
-    private let statisticService: StatisticServiceProtocol = StatisticService()
+    private lazy var presenter = MovieQuizPresenter(viewController: self)
     private var alertPresenter = AlertPresenter()
     
     // MARK: - Lifecycle
@@ -28,36 +27,6 @@ final class MovieQuizViewController: UIViewController {
         setupImageView()
     }
     
-    // MARK: - Network & Loading
-    
-    func showLoadingIndicator() {
-        activityIndicator.isHidden = false
-        activityIndicator.startAnimating()
-    }
-    
-    func hideLoadingIndicator() {
-        activityIndicator.stopAnimating()
-        activityIndicator.isHidden = true
-    }
-    
-    // MARK: - Error Handling
-    
-    func showNetworkError(message: String) {
-        hideLoadingIndicator()
-        
-        let model = AlertModel(title: "Ошибка", message: message, buttonText: "Попробовать еще раз") { [weak self] in
-        guard let self = self else { return }
-            
-            self.presenter.restartGame()
-            
-//            self.presenter.resetQuestionIndex()
-//            self.presenter.correctAnswers = 0
-//            
-//            self.questionFactory?.loadData() //requestNextQuestion()?
-        }
-        alertPresenter.show(in: self, model: model)
-    }
-    
     // MARK: - Setup UI
     
     private func setupImageView() {
@@ -67,12 +36,16 @@ final class MovieQuizViewController: UIViewController {
         layer.borderColor = UIColor.clear.cgColor
     }
     
-    private func highlightImageBorder(isCorrect: Bool) {
-        imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
+    // MARK: - Loading
+    
+    func showLoadingIndicator() {
+        activityIndicator.isHidden = false
+        activityIndicator.startAnimating()
     }
     
-    private func resetImageBorder() {
-        imageView.layer.borderColor = UIColor.clear.cgColor
+    func hideLoadingIndicator() {
+        activityIndicator.stopAnimating()
+        activityIndicator.isHidden = true
     }
     
     // MARK: - Game Flow
@@ -95,20 +68,28 @@ final class MovieQuizViewController: UIViewController {
         alertPresenter.show(in: self, model: model)
     }
     
-    func showAnswerResult(isCorrect: Bool) {
-        let delayInSeconds: TimeInterval = 1
-        presenter.didAnswer(isCorrectAnswer: isCorrect)
-        highlightImageBorder(isCorrect: isCorrect)
+    // MARK: - Error Handling
+    
+    func showNetworkErrorAlert(message: String) {
+        hideLoadingIndicator()
         
-        Timer.scheduledTimer(withTimeInterval: delayInSeconds, repeats: false) { [weak self] _ in
-            guard let self else { return }
-            self.presenter.showNextQuestionOrResults()
-            self.resetImageBorder()
+        let model = AlertModel(title: "Ошибка", message: message, buttonText: "Попробовать еще раз") { [weak self] in
+        guard let self = self else { return }
+            
+            self.presenter.restartGame()
         }
-        
+        alertPresenter.show(in: self, model: model)
     }
     
     // MARK: - UI Helpers
+    
+    func highlightImageBorder(isCorrect: Bool) {
+        imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
+    }
+    
+    func resetImageBorder() {
+        imageView.layer.borderColor = UIColor.clear.cgColor
+    }
     
     func setButtonsEnabled(_ value: Bool) {
            yesButton.isEnabled = value
