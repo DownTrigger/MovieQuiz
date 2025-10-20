@@ -18,7 +18,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private var correctAnswers = 0
     
     private var questionFactory: QuestionFactoryProtocol?
-    private var currentQuestion: QuizQuestion?
     
     private let statisticService: StatisticServiceProtocol = StatisticService()
     private var alertPresenter = AlertPresenter()
@@ -27,6 +26,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        presenter.viewController = self
         
         questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
         
@@ -96,7 +97,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             return
         }
         
-        currentQuestion = question
+        presenter.currentQuestion = question
         let viewModel = presenter.convert(model: question)
         
         DispatchQueue.main.async { [weak self] in
@@ -150,7 +151,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         alertPresenter.show(in: self, model: model)
     }
     
-    private func showAnswerResult(isCorrect: Bool) {
+    func showAnswerResult(isCorrect: Bool) {
         let delayInSeconds: TimeInterval = 1
         if isCorrect { correctAnswers += 1 }
         highlightImageBorder(isCorrect: isCorrect)
@@ -177,26 +178,18 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     // MARK: - UI Helpers
     
-    private func disableButtons(_ value: Bool) {
+    func disableButtons(_ value: Bool) {
         yesButton.isEnabled = !value
         noButton.isEnabled = !value
     }
     
     // MARK: - Actions
     
-    @IBAction private func yesButtonClicked(_ sender: Any) {
-        disableButtons(true)
-        guard let currentQuestion = currentQuestion else {
-            return
-        }
-        showAnswerResult(isCorrect: currentQuestion.correctAnswer)
+    @IBAction private func yesButtonClicked(_ sender: UIButton) {
+        presenter.yesButtonClicked()
     }
     
     @IBAction private func noButtonClicked(_ sender: Any) {
-        disableButtons(true)
-        guard let currentQuestion = currentQuestion else {
-            return
-        }
-        showAnswerResult(isCorrect: !currentQuestion.correctAnswer)
+        presenter.noButtonClicked()
     }
 }
